@@ -1,4 +1,6 @@
 import argparse
+import os
+
 import torch
 
 def args_parser():
@@ -13,7 +15,7 @@ def args_parser():
     parser.add_argument(
         '--model',
         type = str,
-        default = 'cnn',
+        default = 'lenet',
         help='name of model. mnist: logistic, lenet; cifar10: cnn_tutorial, cnn_complex'
     )
     parser.add_argument(
@@ -38,13 +40,13 @@ def args_parser():
     parser.add_argument(
         '--num_communication',
         type = int,
-        default=1,
+        default=30,
         help = 'number of communication rounds with the cloud server'
     )
     parser.add_argument(
         '--num_local_update',
         type=int,
-        default=1,
+        default=10,
         help='number of local update (tau_1)'
     )
     parser.add_argument(
@@ -126,10 +128,16 @@ def args_parser():
         default = 1,
         help = 'random seed (defaul: 1)'
     )
+
+    #editer: Sensorjang 20230925
+    dataset_root = os.path.join(os.getcwd(), 'train_data')
+    if not os.path.exists(dataset_root):
+        os.makedirs(dataset_root)
+
     parser.add_argument(
         '--dataset_root',
         type = str,
-        default = 'data',
+        default = dataset_root,
         help = 'dataset root folder'
     )
     parser.add_argument(

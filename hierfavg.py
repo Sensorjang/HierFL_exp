@@ -356,6 +356,7 @@ def HierFAVG(args):
 
 def main():
     args = args_parser()
+    print(args.dataset_root)
     HierFAVG(args)
 
 if __name__ == '__main__':
