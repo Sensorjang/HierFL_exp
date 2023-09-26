@@ -196,6 +196,7 @@ def initialize_global_nn(args):
     else: raise ValueError(f"Dataset {args.dataset} Not implemented")
     return global_nn
 
+# 分层联邦总聚合
 def HierFAVG(args):
     #make experiments repeatable
     torch.manual_seed(args.seed)
@@ -292,20 +293,24 @@ def HierFAVG(args):
     if args.cuda:
         global_nn = global_nn.cuda(device)
 
-    #Begin training
-    for num_comm in tqdm(range(args.num_communication)):
+    # 开始训练
+    accs = []  # 记录每轮云聚合的全局精度
+    losses = []  # 记录每轮云聚合的平均边缘服务器损失
+    for num_comm in tqdm(range(args.num_communication)): # 云聚合
         cloud.refresh_cloudserver()
         [cloud.edge_register(edge=edge) for edge in edges]
-        for num_edgeagg in range(args.num_edge_aggregation):
+        all_loss_sum = 0.0
+        all_acc_sum = 0.0
+        for num_edgeagg in range(args.num_edge_aggregation): # 边缘聚合
             edge_loss = [0.0]* args.num_edges
             edge_sample = [0]* args.num_edges
             correct_all = 0.0
             total_all = 0.0
             # no edge selection included here
             # for each edge, iterate
-            for i,edge in enumerate(edges):
+            for i,edge in enumerate(edges): # 边缘迭代
                 edge.refresh_edgeserver()
-                client_loss = 0.0
+                client_loss = 0.0 # 本地loss累计
                 selected_cnum = max(int(clients_per_edge * args.frac),1)
                 selected_cids = np.random.choice(edge.cids,
                                                  selected_cnum,
@@ -326,9 +331,11 @@ def HierFAVG(args):
                 correct, total = all_clients_test(edge, clients, edge.cids, device)
                 correct_all += correct
                 total_all += total
-            # end interation in edges
+            # 结束边缘迭代
             all_loss = sum([e_loss * e_sample for e_loss, e_sample in zip(edge_loss, edge_sample)]) / sum(edge_sample)
+            all_loss_sum+=all_loss
             avg_acc = correct_all / total_all
+            all_acc_sum+=avg_acc
             writer.add_scalar(f'Partial_Avg_Train_loss',
                           all_loss,
                           num_comm* args.num_edge_aggregation + num_edgeagg +1)
@@ -336,27 +343,36 @@ def HierFAVG(args):
                           avg_acc,
                           num_comm * args.num_edge_aggregation + num_edgeagg + 1)
 
-        # Now begin the cloud aggregation
+        # 开始云端聚合
         for edge in edges:
             edge.send_to_cloudserver(cloud)
         cloud.aggregate(args)
         for edge in edges:
             cloud.send_to_edge(edge)
-
+        # accs[num_comm] = all_acc_sum / args.num_edge_aggregation
+        # losses[num_comm] = all_loss_sum / args.num_edge_aggregation
+        accs.append(all_acc_sum / args.num_edge_aggregation)
+        losses.append(all_loss_sum / args.num_edge_aggregation)
         global_nn.load_state_dict(state_dict = copy.deepcopy(cloud.shared_state_dict))
         global_nn.train(False)
         correct_all_v, total_all_v = fast_all_clients_test(v_test_loader, global_nn, device)
-        avg_acc_v = correct_all_v / total_all_v
+        avg_acc_v = correct_all_v / total_all_v  # 测试精度
         writer.add_scalar(f'All_Avg_Test_Acc_cloudagg_Vtest',
                           avg_acc_v,
                           num_comm + 1)
 
     writer.close()
+    # 最终测试精度
     print(f"The final virtual acc is {avg_acc_v}")
+    # 云聚合轮次数，全局精度，平均损失
+    print(f"云聚合轮次数：{args.num_communication}")
+    print(f"每轮云端聚合的全局精度：{accs}")
+    print(f"每轮云端聚合的平均损失：{losses}")
+    # print(accs)
+    # print(losses)
 
 def main():
     args = args_parser()
-    print(args.dataset_root)
     HierFAVG(args)
 
 if __name__ == '__main__':

@@ -61,9 +61,12 @@ def iid_esize_split(dataset, args, kwargs, is_shuffle = True):
     split the dataset to users
     Return:
         dict of the data_loaders
+    可自定义每个客户端的训练样本量
     """
-    sum_samples = len(dataset)
-    num_samples_per_client = int(sum_samples / args.num_clients)
+    num_samples_per_client= args.num_sample_per_client
+    # if num_samples_per_client == -1, then use all samples
+    if num_samples_per_client == -1:
+        num_samples_per_client = int(len(dataset) / args.num_clients)
     # change from dict to list
     data_loaders = [0] * args.num_clients
     dict_users, all_idxs = {}, [i for i in range(len(dataset))]
@@ -281,6 +284,7 @@ def niid_esize_split_oneclass(dataset, args, kwargs, is_shuffle = True):
                             shuffle = is_shuffle, **kwargs)
     return data_loaders
 
+# 如何调整本地训练样本数量
 def split_data(dataset, args, kwargs, is_shuffle = True):
     """
     return dataloaders
@@ -298,7 +302,7 @@ def split_data(dataset, args, kwargs, is_shuffle = True):
     return data_loaders
 
 def get_dataset(dataset_root, dataset, args):
-    trains, train_loaders, tests, test_loaders = {}, {}, {}, {}
+    # trains, train_loaders, tests, test_loaders = {}, {}, {}, {}
     if dataset == 'mnist':
         train_loaders, test_loaders, v_train_loader, v_test_loader = get_mnist(dataset_root, args)
     elif dataset == 'cifar10':
@@ -333,7 +337,7 @@ def get_mnist(dataset_root, args):
     return  train_loaders, test_loaders, v_train_loader, v_test_loader
 
 
-def get_cifar10(dataset_root, args):
+def get_cifar10(dataset_root, args): # cifa10数据集下只能使用cnn_complex和resnet18模型
     is_cuda = args.cuda
     kwargs = {'num_workers': 1, 'pin_memory':True} if is_cuda else{}
     if args.model == 'cnn_complex':
@@ -368,8 +372,8 @@ def get_cifar10(dataset_root, args):
                                 shuffle = True, **kwargs)
     v_test_loader = DataLoader(test, batch_size = args.batch_size,
                                 shuffle = False, **kwargs)
-    train_loaders = split_data(train, args, kwargs, is_shuffle = True)
-    test_loaders = split_data(test,  args, kwargs, is_shuffle = False)
+    train_loaders = split_data(train, args, kwargs)
+    test_loaders = split_data(test, args, kwargs)
     return  train_loaders, test_loaders, v_train_loader, v_test_loader
 
 def show_distribution(dataloader, args):
@@ -387,11 +391,10 @@ def show_distribution(dataloader, args):
         # labels = dataloader.dataset.dataset.train_labels.numpy()
     elif args.dataset == 'cifar10':
         try:
-            labels = dataloader.dataset.dataset.train_labels
+            labels = dataloader.dataset.dataset.targets
         except:
             print(f"Using test_labels")
-            labels = dataloader.dataset.dataset.test_labels
-        # labels = dataloader.dataset.dataset.train_labels
+            labels = dataloader.dataset.dataset.targets
     elif args.dataset == 'fsdd':
         labels = dataloader.dataset.labels
     else:

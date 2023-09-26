@@ -1,6 +1,4 @@
 import argparse
-import os
-
 import torch
 
 def args_parser():
@@ -9,14 +7,14 @@ def args_parser():
     parser.add_argument(
         '--dataset',
         type = str,
-        default = 'mnist',
+        default = 'cifar10',
         help = 'name of the dataset: mnist, cifar10'
     )
     parser.add_argument(
         '--model',
         type = str,
-        default = 'lenet',
-        help='name of model. mnist: logistic, lenet; cifar10: cnn_tutorial, cnn_complex'
+        default = 'cnn_complex',
+        help='name of model. mnist: logistic, lenet; cifar10: resnet18, cnn_complex'
     )
     parser.add_argument(
         '--input_channels',
@@ -34,26 +32,27 @@ def args_parser():
     parser.add_argument(
         '--batch_size',
         type = int,
-        default = 10,
+        default = 5,
         help = 'batch size when trained on client'
     )
+    # -------------云聚合轮次、边缘聚合轮次、本地更新轮次
     parser.add_argument(
         '--num_communication',
         type = int,
-        default=30,
+        default=5,
         help = 'number of communication rounds with the cloud server'
-    )
-    parser.add_argument(
-        '--num_local_update',
-        type=int,
-        default=10,
-        help='number of local update (tau_1)'
     )
     parser.add_argument(
         '--num_edge_aggregation',
         type = int,
-        default=1,
-        help = 'number of edge aggregation (tau_2)'
+        default=5,
+        help = 'number of edge aggregation (K_2)'
+    )
+    parser.add_argument(
+        '--num_local_update',
+        type=int,
+        default=5,
+        help='number of local update (K_1)'
     )
     parser.add_argument(
         '--lr',
@@ -95,13 +94,13 @@ def args_parser():
     parser.add_argument(
         '--iid',
         type = int,
-        default = 0,
+        default = 1,
         help = 'distribution of the data, 1,0, -2(one-class)'
     )
     parser.add_argument(
         '--edgeiid',
         type=int,
-        default=0,
+        default=1,
         help='distribution of the data under edges, 1 (edgeiid),0 (edgeniid) (used only when iid = -2)'
     )
     parser.add_argument(
@@ -110,6 +109,7 @@ def args_parser():
         default = 1,
         help = 'fraction of participated clients'
     )
+    # -------------客户端数、边缘服务器数、客户端训练样本量
     parser.add_argument(
         '--num_clients',
         type = int,
@@ -119,8 +119,14 @@ def args_parser():
     parser.add_argument(
         '--num_edges',
         type = int,
-        default= 1,
+        default= 2,
         help= 'number of edges'
+    )
+    parser.add_argument(
+        '--num_sample_per_client',
+        default= -1,
+        type=int,
+        help='>=0: number of samples per client， -1: all samples'
     )
     parser.add_argument(
         '--seed',
@@ -128,22 +134,16 @@ def args_parser():
         default = 1,
         help = 'random seed (defaul: 1)'
     )
-
-    #editer: Sensorjang 20230925
-    dataset_root = os.path.join(os.getcwd(), 'train_data')
-    if not os.path.exists(dataset_root):
-        os.makedirs(dataset_root)
-
     parser.add_argument(
         '--dataset_root',
         type = str,
-        default = dataset_root,
+        default = 'data',
         help = 'dataset root folder'
     )
     parser.add_argument(
         '--show_dis',
         type= int,
-        default= 0,
+        default= 1,
         help='whether to show distribution'
     )
     parser.add_argument(
