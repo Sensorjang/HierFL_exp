@@ -1,5 +1,6 @@
 # Flow of the algorithm
 # Client update(t_1) -> Edge Aggregate(t_2) -> Cloud Aggregate(t_3)
+import json
 
 from options import args_parser
 from tensorboardX import SummaryWriter
@@ -227,10 +228,12 @@ def HierFAVG(args):
             test_loader = test_loaders[i]
             test_size = len(test_loaders[i].dataset)
             print(len(test_loader.dataset))
-            distribution = show_distribution(test_loader, args)
+            if args.test_on_all_samples != 1:
+                distribution = show_distribution(test_loader, args)
+                print(distribution)
             print("test dataloader {} distribution".format(i))
             print(f"test dataloader size {test_size}")
-            print(distribution)
+
     # initialize clients and server
     clients = []
     for i in range(args.num_clients):
@@ -255,6 +258,12 @@ def HierFAVG(args):
     clients_per_edge = int(args.num_clients / args.num_edges)
     p_clients = [0.0] * args.num_edges
 
+    mapping = None
+    if args.active_mapping == 1:
+        # 提取映射关系参数并将其解析为JSON对象
+        mapping_json = args.mapping
+        mapping = json.loads(mapping_json)
+
     if args.iid == -2:
         if args.edgeiid == 1:
             client_class_dis = get_client_class(args, clients)
@@ -271,8 +280,17 @@ def HierFAVG(args):
     else:
         # This is randomly assign the clients to edges
         for i in range(args.num_edges):
-            #Randomly select clients and assign them
-            selected_cids = np.random.choice(cids, clients_per_edge, replace=False)
+            selected_cids = None
+
+            if args.active_mapping == 1:
+                # 根据映射关系进行选择
+                selected_cids = mapping[str(i)]
+            else:
+                #Randomly select clients and assign them
+                selected_cids = np.random.choice(cids, clients_per_edge, replace=False)
+
+            print(f"Edge {i} has clients {selected_cids}")
+            
             cids = list (set(cids) - set(selected_cids))
             edges.append(Edge(id = i,
                               cids = selected_cids,

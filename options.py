@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 
 import torch
@@ -189,6 +190,27 @@ def args_parser():
         type = int,
         default = 1,
         help = '1 means test on all samples, 0 means test samples will be split averagely to each client'
+    )
+
+    # editer: Sensorjang 20230925
+    # 定义edges及其下属clients的映射关系
+    parser.add_argument(
+        '--active_mapping',
+        type = int,
+        default = 1,
+        help = '1 means mapping is active, 0 means mapping is inactive'
+    )
+    mapping = {
+        "0": [0, 1, 2, 3],
+        "1": [4]
+    }
+    # 将映射关系转换为JSON格式
+    mapping_json = json.dumps(mapping)
+    parser.add_argument(
+        '--mapping',
+        type = str,
+        default = mapping_json,
+        help = 'mapping of edges and their clients'
     )
 
 
