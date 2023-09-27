@@ -70,7 +70,11 @@ def iid_esize_split(dataset, args, kwargs, is_shuffle = True):
     # change from dict to list
     data_loaders = [0] * args.num_clients
     dict_users, all_idxs = {}, [i for i in range(len(dataset))]
+    # print('start')
     for i in range(args.num_clients):
+
+        # 打印all_idxs, num_samples_per_client的长度
+        # print(len(all_idxs), num_samples_per_client)
         dict_users[i] = np.random.choice(all_idxs, num_samples_per_client, replace = False)
         #dict_users[i] = dict_users[i].astype(int)
         #dict_users[i] = set(dict_users[i])
@@ -78,6 +82,7 @@ def iid_esize_split(dataset, args, kwargs, is_shuffle = True):
         data_loaders[i] = DataLoader(DatasetSplit(dataset, dict_users[i]),
                                     batch_size = args.batch_size,
                                     shuffle = is_shuffle, **kwargs)
+        # print(len(all_idxs), num_samples_per_client)
 
     return data_loaders
 
@@ -326,7 +331,18 @@ def get_mnist(dataset_root, args):
                             download = True, transform = transform)
     #note: is_shuffle here also is a flag for differentiating train and test
     train_loaders = split_data(train, args, kwargs, is_shuffle = True)
-    test_loaders = split_data(test,  args, kwargs, is_shuffle = False)
+
+    test_loaders = []
+    if args.test_on_all_samples == 1:
+        # 将整个测试集分配给每个客户端
+        for i in range(args.num_clients):
+            test_loader = torch.utils.data.DataLoader(
+                test, batch_size=args.batch_size, shuffle=False,  **kwargs
+            )
+            test_loaders.append(test_loader)
+    else:
+        test_loaders = split_data(test,  args, kwargs, is_shuffle = False)
+
     #the actual batch_size may need to change.... Depend on the actual gradient...
     #originally written to get the gradient of the whole dataset
     #but now it seems to be able to improve speed of getting accuracy of virtual sequence
@@ -373,7 +389,18 @@ def get_cifar10(dataset_root, args): # cifa10数据集下只能使用cnn_complex
     v_test_loader = DataLoader(test, batch_size = args.batch_size,
                                 shuffle = False, **kwargs)
     train_loaders = split_data(train, args, kwargs)
-    test_loaders = split_data(test, args, kwargs)
+
+    test_loaders = []
+    if args.test_on_all_samples == 1:
+        # 将整个测试集分配给每个客户端
+        for i in range(args.num_clients):
+            test_loader = torch.utils.data.DataLoader(
+                test, batch_size=args.batch_size, shuffle=False,  **kwargs
+            )
+            test_loaders.append(test_loader)
+    else:
+        test_loaders = split_data(test, args, kwargs)
+
     return  train_loaders, test_loaders, v_train_loader, v_test_loader
 
 def show_distribution(dataloader, args):
