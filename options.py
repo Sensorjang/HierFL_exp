@@ -41,7 +41,7 @@ def args_parser():
     parser.add_argument(
         '--num_communication',
         type = int,
-        default=5,
+        default=1,
         help = 'number of communication rounds with the cloud server'
     )
     parser.add_argument(
@@ -115,7 +115,7 @@ def args_parser():
     parser.add_argument(
         '--num_clients',
         type = int,
-        default = 10,
+        default = 5,
         help = 'number of all available clients'
     )
     parser.add_argument(
@@ -126,7 +126,7 @@ def args_parser():
     )
     parser.add_argument(
         '--num_sample_per_client',
-        default= -1,
+        default= 3000,
         type=int,
         help='>=0: number of samples per client， -1: all samples'
     )
@@ -181,6 +181,14 @@ def args_parser():
         '--local_model',
         default=0,
         type=int
+    )
+
+    # editer: Sensorjang 20230925
+    parser.add_argument(
+        '--test_on_all_samples',
+        type = int,
+        default = 1,
+        help = '1 means test on all samples, 0 means test samples will be split averagely to each client'
     )
 
 

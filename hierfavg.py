@@ -215,13 +215,14 @@ def HierFAVG(args):
     # Build dataloaders
     train_loaders, test_loaders, v_train_loader, v_test_loader = get_dataloaders(args)
     if args.show_dis:
+        # 训练集加载器划分
         for i in range(args.num_clients):
             train_loader = train_loaders[i]
             print(len(train_loader.dataset))
             distribution = show_distribution(train_loader, args)
             print("train dataloader {} distribution".format(i))
             print(distribution)
-
+        # 测试集加载器划分
         for i in range(args.num_clients):
             test_loader = test_loaders[i]
             test_size = len(test_loaders[i].dataset)
@@ -233,6 +234,7 @@ def HierFAVG(args):
     # initialize clients and server
     clients = []
     for i in range(args.num_clients):
+        # 初始化客户端
         clients.append(Client(id=i,
                               train_loader=train_loaders[i],
                               test_loader=test_loaders[i],
