@@ -1,5 +1,11 @@
-<b>TMC实验攻关</b>
+<div align="center">
+<h1 align="center">FARA</h1>
+TMC实验攻关
 
+![GitHub](https://img.shields.io/github/license/Sensorjang/HierFL_exp)
+![Language](https://img.shields.io/badge/Language-Python-blue)
+
+</div>
 
 源码来自论文《Client-Edge-Cloud Hierarchical Federated Learning》https://paperswithcode.com/paper/edge-assisted-hierarchical-federated-learning
 数据集为mnist及cifar-10，模型包括cnn和resnet。
