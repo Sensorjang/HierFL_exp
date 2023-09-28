@@ -97,13 +97,13 @@ def args_parser():
     parser.add_argument(
         '--iid',
         type = int,
-        default = 1,
-        help = 'distribution of the data, 1,0, -2(one-class)'
+        default = -2,
+        help = 'distribution of the data, 1,0,-1,-2(one-class)'
     )
     parser.add_argument(
         '--edgeiid',
         type=int,
-        default=1,
+        default=0,
         help='distribution of the data under edges, 1 (edgeiid),0 (edgeniid) (used only when iid = -2)'
     )
     parser.add_argument(
@@ -116,7 +116,7 @@ def args_parser():
     parser.add_argument(
         '--num_clients',
         type = int,
-        default = 5,
+        default = 20,
         help = 'number of all available clients'
     )
     parser.add_argument(

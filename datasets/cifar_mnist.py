@@ -113,10 +113,10 @@ def niid_esize_split(dataset, args, kwargs, is_shuffle = True):
     dict_users = {i: np.array([]) for i in range(args.num_clients)}
     idxs = np.arange(num_shards * num_imgs)
     # is_shuffle is used to differentiate between train and test
-    if is_shuffle:
-        labels = dataset.train_labels
-    else:
-        labels = dataset.test_labels
+
+    # editer: Ultraman6 20230928
+    # torch>=1.4.0
+    labels = dataset.targets
     idxs_labels = np.vstack((idxs, labels))
     idxs_labels = idxs_labels[:, idxs_labels[1,:].argsort()]
     # sort the data according to their label
@@ -268,10 +268,10 @@ def niid_esize_split_oneclass(dataset, args, kwargs, is_shuffle = True):
     idx_shard = [i for i in range(num_shards)]
     dict_users = {i: np.array([]) for i in range(args.num_clients)}
     idxs = np.arange(num_shards * num_imgs)
-    if is_shuffle:
-        labels = dataset.train_labels
-    else:
-        labels = dataset.test_labels
+
+    # editer: Ultraman6 20230928
+    # torch>=1.4.0
+    labels = dataset.targets
     idxs_labels = np.vstack((idxs, labels))
     idxs_labels = idxs_labels[:, idxs_labels[1,:].argsort()]
     idxs = idxs_labels[0,:]
