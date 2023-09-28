@@ -1,6 +1,5 @@
 <div align="center">
-<h1 align="center">FARA</h1>
-TMC实验攻关
+<h1 align="center">TMC实验攻关</h1>
 
 ![GitHub](https://img.shields.io/github/license/Sensorjang/HierFL_exp)
 ![Language](https://img.shields.io/badge/Language-Python-blue)
