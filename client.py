@@ -37,6 +37,7 @@ class Client():
                 labels = Variable(labels).to(device)
                 loss += self.model.optimize_model(input_batch=inputs,
                                                   label_batch=labels)
+
                 itered_num += 1
                 if itered_num >= num_iter:
                     end = True
@@ -66,6 +67,28 @@ class Client():
                 _, predict = torch.max(outputs, 1)
                 total += labels.size(0)
                 correct += (predict == labels).sum().item()
+
+                # # 打印一条样本检查样本是否正确
+                # import numpy as np
+                # from time import sleep
+                # import matplotlib.pyplot as plt
+                # img, label = self.test_loader.dataset[0]
+                # print("-------------")
+                # # 绘制出一条样本图像
+                # # plt
+                # import matplotlib.pyplot as plt
+                # img = img.numpy()
+                # img = np.squeeze(img)
+                # plt.imshow(img, cmap='gray')
+                # plt.show()
+                # # 打印样本标签值
+                # print("label: ", label)
+                # # 打印预测值
+                # print("predict: ", predict[0].item())
+                # print("-------------")
+                # sleep(100)
+
+
         return correct, total
 
     def send_to_edgeserver(self, edgeserver):

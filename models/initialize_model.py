@@ -122,6 +122,12 @@ def initialize_model(args, device):
                 specific_layers = None
             else:
                 raise ValueError('Model not implemented for CIFAR-10')
+        elif args.dataset == 'femnist':
+            if args.model == 'lenet':
+               shared_layers = mnist_lenet(input_channels=1, output_channels=62)
+               specific_layers = None
+            else:
+                raise ValueError('Model not implemented for FEMNIST')
         elif args.dataset == 'mnist':
             if args.model == 'lenet':
                shared_layers = mnist_lenet(input_channels=1, output_channels=10)

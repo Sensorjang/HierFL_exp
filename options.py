@@ -10,26 +10,26 @@ def args_parser():
     parser.add_argument(
         '--dataset',
         type = str,
-        default = 'cifar10',
-        help = 'name of the dataset: mnist, cifar10'
+        default = 'femnist',
+        help = 'name of the dataset: mnist, cifar10, femnist'
     )
     parser.add_argument(
         '--model',
         type = str,
-        default = 'resnet18',
-        help='name of model. mnist: logistic, lenet; cifar10: resnet18, cnn_complex'
+        default = 'lenet',
+        help='name of model. mnist: logistic, lenet; cifar10: resnet18, cnn_complex; femnist: lenet'
     )
     parser.add_argument(
         '--input_channels',
         type = int,
         default = 3,
-        help = 'input channels. mnist:1, cifar10 :3'
+        help = 'input channels. femnist、mnist:1, cifar10 :3'
     )
     parser.add_argument(
         '--output_channels',
         type = int,
         default = 10,
-        help = 'output channels'
+        help = 'output channels. femnist:62'
     )
     #nn training hyper parameter
     parser.add_argument(
@@ -97,13 +97,13 @@ def args_parser():
     parser.add_argument(
         '--iid',
         type = int,
-        default = -2,
+        default = 0,
         help = 'distribution of the data, 1,0,-1,-2(one-class)'
     )
     parser.add_argument(
         '--edgeiid',
         type=int,
-        default=0,
+        default = 0,
         help='distribution of the data under edges, 1 (edgeiid),0 (edgeniid) (used only when iid = -2)'
     )
     parser.add_argument(
@@ -197,7 +197,7 @@ def args_parser():
     parser.add_argument(
         '--active_mapping',
         type = int,
-        default = 1,
+        default = 0,
         help = '1 means mapping is active, 0 means mapping is inactive'
     )
     mapping = {

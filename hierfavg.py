@@ -188,6 +188,9 @@ def initialize_global_nn(args):
         elif args.model == 'logistic':
             global_nn = LogisticRegression(input_dim=1, output_dim=10)
         else: raise ValueError(f"Model{args.model} not implemented for mnist")
+    elif args.dataset == 'femnist':
+        if args.model == 'lenet':
+            global_nn = mnist_lenet(input_channels=1, output_channels=62)
     elif args.dataset == 'cifar10':
         if args.model == 'cnn_complex':
             global_nn = cifar_cnn_3conv(input_channels=3, output_channels=10)
@@ -355,6 +358,7 @@ def HierFAVG(args):
             all_loss = sum([e_loss * e_sample for e_loss, e_sample in zip(edge_loss, edge_sample)]) / sum(edge_sample)
             all_loss_sum+=all_loss
             avg_acc = correct_all / total_all
+            print(f"correct_all: {correct_all}, total_all: {total_all}, avg_acc: {avg_acc}")
             all_acc_sum+=avg_acc
             writer.add_scalar(f'Partial_Avg_Train_loss',
                           all_loss,

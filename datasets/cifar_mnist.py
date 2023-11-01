@@ -5,11 +5,12 @@ import os
 from tqdm import tqdm
 from sklearn import metrics
 import numpy as np
-
+import h5py
+import torch.utils.data as data
 import torch
 import torch.backends.cudnn as cudnn
 cudnn.banchmark = True
-
+import torchvision
 import torchvision.transforms as transforms
 from torchvision import datasets
 from torch.utils.data import DataLoader, Dataset
@@ -114,14 +115,23 @@ def niid_esize_split(dataset, args, kwargs, is_shuffle = True):
     idxs = np.arange(num_shards * num_imgs)
     # is_shuffle is used to differentiate between train and test
 
-    # editer: Ultraman6 20230928
-    # torch>=1.4.0
-    labels = dataset.targets
-    idxs_labels = np.vstack((idxs, labels))
-    idxs_labels = idxs_labels[:, idxs_labels[1,:].argsort()]
-    # sort the data according to their label
-    idxs = idxs_labels[0,:]
-    idxs = idxs.astype(int)
+    if args.dataset != "femnist":
+        # original
+        # editer: Ultraman6 20230928
+        # torch>=1.4.0
+        labels = dataset.targets
+        idxs_labels = np.vstack((idxs, labels))
+        idxs_labels = idxs_labels[:, idxs_labels[1,:].argsort()]
+        # sort the data according to their label
+        idxs = idxs_labels[0,:]
+        idxs = idxs.astype(int)
+    else:
+        # custom
+        labels = np.array(dataset.targets)  # 将labels转换为NumPy数组
+        idxs_labels = np.vstack((idxs[:len(labels)], labels[:len(idxs)]))
+        idxs_labels = idxs_labels[:, idxs_labels[1, :].argsort()]
+        idxs = idxs_labels[0, :]
+        idxs = idxs.astype(int)
 
     #divide and assign
     for i in range(args.num_clients):
@@ -269,13 +279,22 @@ def niid_esize_split_oneclass(dataset, args, kwargs, is_shuffle = True):
     dict_users = {i: np.array([]) for i in range(args.num_clients)}
     idxs = np.arange(num_shards * num_imgs)
 
-    # editer: Ultraman6 20230928
-    # torch>=1.4.0
-    labels = dataset.targets
-    idxs_labels = np.vstack((idxs, labels))
-    idxs_labels = idxs_labels[:, idxs_labels[1,:].argsort()]
-    idxs = idxs_labels[0,:]
-    idxs = idxs.astype(int)
+    if args.dataset != "femnist":
+        # original
+        # editer: Ultraman6 20230928
+        # torch>=1.4.0
+        labels = dataset.targets
+        idxs_labels = np.vstack((idxs, labels))
+        idxs_labels = idxs_labels[:, idxs_labels[1, :].argsort()]
+        idxs = idxs_labels[0, :]
+        idxs = idxs.astype(int)
+    else:
+        # custom
+        labels = np.array(dataset.targets)  # 将labels转换为NumPy数组
+        idxs_labels = np.vstack((idxs[:len(labels)], labels[:len(idxs)]))
+        idxs_labels = idxs_labels[:, idxs_labels[1, :].argsort()]
+        idxs = idxs_labels[0, :]
+        idxs = idxs.astype(int)
 
     #divide and assign
     for i in range(args.num_clients):
@@ -313,7 +332,7 @@ def get_dataset(dataset_root, dataset, args):
     elif dataset == 'cifar10':
         train_loaders, test_loaders, v_train_loader, v_test_loader = get_cifar10(dataset_root, args)
     elif dataset == 'femnist':
-        raise ValueError('CODING ERROR: FEMNIST dataset should not use this file')
+        train_loaders, test_loaders, v_train_loader, v_test_loader = get_femnist(dataset_root, args)
     else:
         raise ValueError('Dataset `{}` not found'.format(dataset))
     return train_loaders, test_loaders, v_train_loader, v_test_loader
@@ -403,13 +422,79 @@ def get_cifar10(dataset_root, args): # cifa10数据集下只能使用cnn_complex
 
     return  train_loaders, test_loaders, v_train_loader, v_test_loader
 
+def get_femnist(dataset_root, args):
+    is_cuda = args.cuda
+    kwargs = {'num_workers': 1, 'pin_memory': True} if is_cuda else {}
+
+    train_h5 = h5py.File(os.path.join(dataset_root, 'femnist/fed_emnist_train.h5'), "r")
+    test_h5 = h5py.File(os.path.join(dataset_root, 'femnist/fed_emnist_test.h5'), "r")
+    train_x = []
+    test_x = []
+    train_y = []
+    test_y = []
+    _EXAMPLE = "examples"
+    _IMGAE = "pixels"
+    _LABEL = "label"
+
+    client_ids_train = list(train_h5[_EXAMPLE].keys())
+    client_ids_test = list(test_h5[_EXAMPLE].keys())
+    train_ids = client_ids_train
+    test_ids = client_ids_test
+
+    for client_id in train_ids:
+        train_x.append(train_h5[_EXAMPLE][client_id][_IMGAE][()])
+        train_y.append(train_h5[_EXAMPLE][client_id][_LABEL][()].squeeze())
+    train_x = np.vstack(train_x)
+    train_y = np.hstack(train_y)
+
+    for client_id in test_ids:
+        test_x.append(test_h5[_EXAMPLE][client_id][_IMGAE][()])
+        test_y.append(test_h5[_EXAMPLE][client_id][_LABEL][()].squeeze())
+    test_x = np.vstack(test_x)
+    test_y = np.hstack(test_y)
+
+    train_x = train_x.reshape(-1, 1, 28, 28)
+    test_x = test_x.reshape(-1, 1, 28, 28)
+
+    # train_ds = data.TensorDataset(torch.tensor(train_x), torch.tensor(train_y, dtype=torch.long))
+    # train_ds.targets = train_y  # 添加targets属性
+    # # train_loader = data.DataLoader(
+    # #     dataset=train_ds, batch_size=args.batch_size, shuffle=True, drop_last=True, **kwargs
+    # # )
+    # test_ds = data.TensorDataset(torch.tensor(test_x), torch.tensor(test_y, dtype=torch.long))
+    # test_ds.targets = test_y  # 添加targets属性
+    # # test_loader = data.DataLoader(
+    # #     dataset=test_ds, batch_size=args.batch_size, shuffle=True, drop_last=False, **kwargs
+    # # )
+
+    train_ds = data.TensorDataset(torch.tensor(train_x), torch.tensor(train_y, dtype=torch.long))
+    train_ds.targets = train_y  # 添加targets属性
+    test_ds = data.TensorDataset(torch.tensor(test_x), torch.tensor(test_y, dtype=torch.long))
+    test_ds.targets = test_y  # 添加targets属性
+
+    v_train_loader = DataLoader(train_ds, batch_size=args.batch_size * args.num_clients,
+                                shuffle=True, **kwargs)
+    v_test_loader = DataLoader(test_ds, batch_size=args.batch_size * args.num_clients,
+                               shuffle=False, **kwargs)
+
+    train_loaders = split_data(train_ds, args, kwargs, is_shuffle=True)
+    test_loaders = split_data(test_ds, args, kwargs, is_shuffle=False)
+
+    train_h5.close()
+    test_h5.close()
+
+    return train_loaders, test_loaders, v_train_loader, v_test_loader
+
+
 def show_distribution(dataloader, args):
     """
     show the distribution of the data on certain client with dataloader
     return:
         percentage of each class of the label
     """
-    if args.dataset == 'mnist':
+    if args.dataset == 'femnist':
+        labels = dataloader.dataset.dataset.targets
+    elif args.dataset == 'mnist':
         try:
             labels = dataloader.dataset.dataset.train_labels.numpy()
         except:
