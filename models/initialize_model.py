@@ -3,7 +3,7 @@
 
 from models.cifar_cnn_3conv_layer import cifar_cnn_3conv, cifar_cnn_3conv_specific, cifar_cnn_3conv_shared
 from models.cifar_resnet import ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
-from models.mnist_cnn import mnist_lenet
+from models.mnist_cnn import mnist_lenet, mnist_cnn
 from models.mnist_logistic import LogisticRegression
 import torch.optim as optim
 import torch.nn as nn
@@ -129,6 +129,9 @@ def initialize_model(args, device):
             elif args.model == 'logistic':
                shared_layers = LogisticRegression(input_dim=1, output_dim=62)
                specific_layers = None
+            elif args.model == 'cnn':
+                shared_layers =  mnist_cnn(input_channels=1, output_channels=62)
+                specific_layers = None
             else:
                 raise ValueError('Model not implemented for FEMNIST')
         elif args.dataset == 'mnist':
@@ -138,6 +141,9 @@ def initialize_model(args, device):
             elif args.model == 'logistic':
                shared_layers = LogisticRegression(input_dim=1, output_dim=10)
                specific_layers = None
+            elif args.model == 'cnn':
+                shared_layers =  mnist_cnn(input_channels=1, output_channels=10)
+                specific_layers = None
             else:
                 raise ValueError('Model not implemented for MNIST')
         else:

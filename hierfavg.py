@@ -12,7 +12,7 @@ from datasets.get_data import get_dataloaders, show_distribution
 import copy
 import numpy as np
 from tqdm import tqdm
-from models.mnist_cnn import mnist_lenet
+from models.mnist_cnn import mnist_lenet, mnist_cnn
 from models.cifar_cnn_3conv_layer import cifar_cnn_3conv
 from models.cifar_resnet import ResNet18
 from models.mnist_logistic import LogisticRegression
@@ -187,12 +187,16 @@ def initialize_global_nn(args):
             global_nn = mnist_lenet(input_channels=1, output_channels=10)
         elif args.model == 'logistic':
             global_nn = LogisticRegression(input_dim=1, output_dim=10)
+        elif args.model == 'cnn':
+            global_nn = mnist_cnn(input_channels=1, output_channels=10)
         else: raise ValueError(f"Model{args.model} not implemented for mnist")
     elif args.dataset == 'femnist':
         if args.model == 'lenet':
             global_nn = mnist_lenet(input_channels=1, output_channels=62)
         elif args.model == 'logistic':
             global_nn = LogisticRegression(input_dim=1, output_dim=62)
+        elif args.model == 'cnn':
+            global_nn = mnist_cnn(input_channels=1, output_channels=62)
         else: raise ValueError(f"Model{args.model} not implemented for femnist")
     elif args.dataset == 'cifar10':
         if args.model == 'cnn_complex':

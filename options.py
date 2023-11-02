@@ -16,51 +16,51 @@ def args_parser():
     parser.add_argument(
         '--model',
         type = str,
-        default = 'logistic',
+        default = 'cnn',
         help='name of model. mnist: logistic, lenet; cifar10: resnet18, cnn_complex; femnist: lenet'
     )
     parser.add_argument(
         '--input_channels',
         type = int,
-        default = 3,
+        default = 1,
         help = 'input channels. femnist、mnist:1, cifar10 :3'
     )
     parser.add_argument(
         '--output_channels',
         type = int,
-        default = 10,
+        default = 62,
         help = 'output channels. femnist:62'
     )
     #nn training hyper parameter
     parser.add_argument(
         '--batch_size',
         type = int,
-        default = 5,
+        default = 10,
         help = 'batch size when trained on client'
     )
     # -------------云聚合轮次、边缘聚合轮次、本地更新轮次
     parser.add_argument(
         '--num_communication',
         type = int,
-        default=1,
+        default=5,
         help = 'number of communication rounds with the cloud server'
     )
     parser.add_argument(
         '--num_edge_aggregation',
         type = int,
-        default=5,
+        default=20,
         help = 'number of edge aggregation (K_2)'
     )
     parser.add_argument(
         '--num_local_update',
         type=int,
-        default=5,
+        default=20,
         help='number of local update (K_1)'
     )
     parser.add_argument(
         '--lr',
         type = float,
-        default = 0.001,
+        default = 0.06,
         help = 'learning rate of the SGD when trained on client'
     )
     parser.add_argument(
@@ -97,13 +97,13 @@ def args_parser():
     parser.add_argument(
         '--iid',
         type = int,
-        default = 0,
+        default = 1,
         help = 'distribution of the data, 1,0,-1,-2(one-class)'
     )
     parser.add_argument(
         '--edgeiid',
         type=int,
-        default = 0,
+        default = 1,
         help='distribution of the data under edges, 1 (edgeiid),0 (edgeniid) (used only when iid = -2)'
     )
     parser.add_argument(
@@ -127,7 +127,7 @@ def args_parser():
     )
     parser.add_argument(
         '--num_sample_per_client',
-        default= 3000,
+        default= -1,
         type=int,
         help='>=0: number of samples per client， -1: all samples'
     )
