@@ -124,10 +124,10 @@ def initialize_model(args, device):
                 raise ValueError('Model not implemented for CIFAR-10')
         elif args.dataset == 'femnist':
             if args.model == 'lenet':
-               shared_layers = mnist_lenet(input_channels=1, output_channels=65)
+               shared_layers = mnist_lenet(input_channels=1, output_channels=62)
                specific_layers = None
             elif args.model == 'logistic':
-               shared_layers = LogisticRegression(input_dim=1, output_dim=65)
+               shared_layers = LogisticRegression(input_dim=1, output_dim=62)
                specific_layers = None
             else:
                 raise ValueError('Model not implemented for FEMNIST')

@@ -192,7 +192,7 @@ def initialize_global_nn(args):
         if args.model == 'lenet':
             global_nn = mnist_lenet(input_channels=1, output_channels=62)
         elif args.model == 'logistic':
-            global_nn = LogisticRegression(input_dim=1, output_dim=65)
+            global_nn = LogisticRegression(input_dim=1, output_dim=62)
         else: raise ValueError(f"Model{args.model} not implemented for femnist")
     elif args.dataset == 'cifar10':
         if args.model == 'cnn_complex':
