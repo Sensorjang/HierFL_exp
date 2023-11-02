@@ -16,7 +16,7 @@ def args_parser():
     parser.add_argument(
         '--model',
         type = str,
-        default = 'lenet',
+        default = 'logistic',
         help='name of model. mnist: logistic, lenet; cifar10: resnet18, cnn_complex; femnist: lenet'
     )
     parser.add_argument(

@@ -35,6 +35,7 @@ class Client():
                 inputs, labels = data
                 inputs = Variable(inputs).to(device)
                 labels = Variable(labels).to(device)
+                # print("学习了样本label", labels)
                 loss += self.model.optimize_model(input_batch=inputs,
                                                   label_batch=labels)
 
@@ -67,6 +68,7 @@ class Client():
                 _, predict = torch.max(outputs, 1)
                 total += labels.size(0)
                 correct += (predict == labels).sum().item()
+                # print("predict: ", predict[0].item())
 
                 # # 打印一条样本检查样本是否正确
                 # import numpy as np
