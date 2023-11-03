@@ -17,13 +17,13 @@ def args_parser():
         '--model',
         type = str,
         default = 'cnn',
-        help='name of model. mnist: logistic, lenet; cifar10: resnet18, cnn_complex; femnist: lenet'
+        help='name of model. mnist: logistic, lenet, cnn; cifar10: resnet18, cnn_complex; femnist: logistic, lenet, cnn'
     )
     parser.add_argument(
         '--input_channels',
         type = int,
         default = 1,
-        help = 'input channels. femnist、mnist:1, cifar10 :3'
+        help = 'input channels. femnist:1, mnist:1, cifar10 :3'
     )
     parser.add_argument(
         '--output_channels',
